@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oaas-jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: oaas-jenkins
+  template:
+    metadata:
+      labels:
+        run: oaas-jenkins
+    spec:
+      serviceAccountName: jenkins-sa
+      containers:
+      - name: oaas-jenkins
+        image: lambertacr.azurecr.io/oaas-jenkins:v1
+        readinessProbe:
+          initialDelaySeconds: 40
+          tcpSocket:
+            port: 8080
+        volumeMounts: 
+        - mountPath: /var/run/docker.sock
+          name: docker-sock 
+        - mountPath: /var/jenkins_home
+          name: jenkins-data
+      volumes: 
+      - name: docker-sock
+        hostPath: 
+          path: /var/run/docker.sock
+      - name: jenkins-data
+        hostPath:
+          path: /data/jenkins-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oaas-jenkins-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+  selector:
+     run: oaas-jenkins

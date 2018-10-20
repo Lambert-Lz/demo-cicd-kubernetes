@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oaas-front-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oaas-front
+  template:
+    metadata:
+      labels:
+        app: oaas-front
+    spec:
+      containers:
+      - name: oaas-front
+        image: lambertacr.azurecr.io/oaas-nginx-front:v8.0
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oaas-front-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: oaas-front
